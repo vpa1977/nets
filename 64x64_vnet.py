@@ -7,7 +7,7 @@ from dicom_helper import netset
 
 batch_size = 1
 size = 64
-depth = 32 # must align by four
+depth = 32 
 
 def get_filler():
 	return dict([('type' , 'msra'), ('variance_norm' , 2)])
@@ -102,11 +102,7 @@ net = create_net()
 f = open("sample.prototxt", "w");
 f.write(str(net))
 f.close()
-
 print(net)
-
-#instance = caffe.Net("L:\\KAGGLE\\vnet\\vnet.prototxt.old", caffe.TRAIN)
 instance = caffe.Net("sample.prototxt", caffe.TRAIN)
 instance.forward()
-
-print("test")
+print("test done")
