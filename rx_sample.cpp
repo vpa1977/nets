@@ -165,9 +165,8 @@ void Threading()
         {
             std::cout << " Subscription thread2:" << GetCurrentThreadId() << std::endl;
         });
-        next.as_blocking();
     }
-    
+    Sleep(2000);
     std::cout << std::endl << std::endl;
     // reuse same thread
     {
@@ -181,31 +180,33 @@ void Threading()
 
         auto keys = rx::observable<>::create<int>(
             [=](rx::subscriber<int> dest) {
-            std::cout << " Subscriber thread:" << GetCurrentThreadId() << std::endl;
-
             dest.on_next(1);
             dest.on_next(2);
             dest.on_next(3);
             dest.on_completed();
         }).subscribe_on(rx::identity_current_thread()).
             observe_on(otherThread);
-
+        /// proces one by one
         keys.subscribe( // thread 1
-            [=](int)
+            [=](int val)
         {
-            std::cout << " Subscription thread:" << GetCurrentThreadId() << std::endl;
+            std::cout << " Subscription thread:" << GetCurrentThreadId() << " value " << val <<std::endl;
         });
-
         auto next = keys.map([=](int val) // thread 2
         {
-            std::cout << " map thread:" << GetCurrentThreadId() << std::endl;
+            std::cout << " map thread:" << GetCurrentThreadId() << " value " << val << std::endl;
             return val;
-        }).as_blocking();
-        next.subscribe([](int)
-        {
-            std::cout << " Subscription thread2:" << GetCurrentThreadId() << std::endl;
         });
+        /// proces one by one
+        next.subscribe([](int val)
+        {
+            std::cout << " Subscription thread2:" << GetCurrentThreadId() << " value " << val << std::endl;
+        });
+        
+        Sleep(2000);
     }
+    
+    std::cout << "done" << std::endl;
 }
 
 void Errors()
@@ -256,6 +257,6 @@ void Errors()
 
 int main()
 {
-    Errors();
+    Threading();
     return 0;
 }
