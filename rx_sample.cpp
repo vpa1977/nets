@@ -255,6 +255,47 @@ void Errors()
 
 }
 
+
+template <class Event, class Driver , class Applet>
+class Pipeline
+{
+public:
+    Pipeline(Driver& d, Applet& applet)
+    {
+        static_assert(std::is_base_of<rx::subjects::subject, Driver>::value, "Driver not derived from rxs::subject");
+        auto applet_thread = rx::make_new_thread();
+        auto lookup_thread = rx::make_new_thread();
+
+        auto src = rx::observable<>::create<Event>(
+            [=](rx::subscriber<Event> dest)
+            {
+                while (driver.isRunning())
+                    dest.on_next(driver.poll());
+                dest.on_completed();
+            }
+        ).observe_on(applet_thread);
+
+        auto applet_stream = src.filter([=](const Event& e) {return true; });
+
+        applet_stream.map([=](const Event& e) {
+            return applet.LookupSomething();
+        }).observe_on(lookup_thread).
+        
+        map([=](const Event& e) {
+            return ReadDatabaseAndReturnSomething();
+        }).timeout(APPLET_LOOKUP_TIMEOUT)
+        .observe_on(applet_thread).map([=](const Event& e) {
+            return processEventAndSendSomethingToDriver();
+        }).subscribe([=](const Event& e) {
+            d.on_next(e);
+        }, 
+         [=](std::exception_ptr ex)
+        {
+            // catch rx::timeout_error here
+        });
+    }
+};
+
 int main()
 {
     Threading();
