@@ -84,4 +84,13 @@ urllib2.install_opener(opener)
 # set Proxy 
 req.set_proxy('proxy', 'http')
 
+
+
+import pdb
+
+pdb.set_trace() # breakpoint
+
+print(x)
+
+
  
