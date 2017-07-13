@@ -12,6 +12,10 @@ class httpclient:
 			]
 		self.magic_inputs = ["'+'%'+'", "'", "' OR 1=1", "#" , "1' or '1' = '1'))/*", "1' or '1' = '1'))#"]
 
+	def decorate(self, request):
+		# do nothing
+		return
+
 	def make_opener(self, uri, agent='Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11'):
 		opener = urllib2.build_opener(*self.handlers)
 		opener.addheaders = [('User-Agent', agent	)]
@@ -20,6 +24,7 @@ class httpclient:
 
 	def fetch(self,uri, headers):
 		req = urllib2.Request(uri)
+		self.decorate(req)
 		opener = self.make_opener(uri)
 		self.patch_headers(opener, headers)
 		return opener.open(req)
@@ -29,6 +34,7 @@ class httpclient:
 		uri = uri + '?' + url_values
 		print(uri)
 		req = urllib2.Request(uri)
+		self.decorate(req)
 		opener = self.make_opener(uri)
 		self.patch_headers(opener, headers)
 		return opener.open(req)
@@ -36,6 +42,7 @@ class httpclient:
 	def post(self, uri, data = dict(), headers=None): # data - dict()
 		data = urllib.urlencode(data)
 		req = urllib2.Request(uri, data)
+		self.decorate(req)
 		opener = self.make_opener(uri)
 		self.patch_headers(opener, headers)
 		return opener.open(req)
