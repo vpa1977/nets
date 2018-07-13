@@ -7,6 +7,7 @@
 # javascript console: document
 # javascript console : document.cookie="name=value"
 # https://hc.apache.org/httpcomponents-client-4.5.x/examples.html
+# https://github.com/zardus/ctf-tools
 #dd if=yourfile ibs=1 skip=200 count=100
 
 import urllib
