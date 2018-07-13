@@ -10,17 +10,19 @@
 #dd if=yourfile ibs=1 skip=200 count=100
 
 import urllib
-import cookielib
-import urllib2
-from cookielib import Cookie, CookieJar 
+import http.cookiejar
+import urllib.request
+import urllib.error
+
+from http.cookiejar import Cookie, CookieJar 
 
 class httpclient:
 	def __init__(self):
-		self.cookies = cookielib.LWPCookieJar()
+		self.cookies = http.cookiejar.LWPCookieJar()
 		self.handlers = [
-			urllib2.HTTPHandler(),
-			urllib2.HTTPSHandler(),
-			urllib2.HTTPCookieProcessor(self.cookies)
+			urllib.request.HTTPHandler(),
+			urllib.request.HTTPSHandler(),
+			urllib.request.HTTPCookieProcessor(self.cookies)
 			]
 		self.magic_inputs = ["'+'%'+'", "'", "' OR '1'='1", "#" , "1 or 1=1", "1' or 1=1#"]
 		
@@ -31,13 +33,13 @@ class httpclient:
 		return
 
 	def make_opener(self, uri, agent='Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11'):
-		opener = urllib2.build_opener(*self.handlers)
+		opener = urllib.request.build_opener(*self.handlers)
 		opener.addheaders = [('User-Agent', agent	)]
 		opener.addheaders += [('Referer', uri)]
 		return opener
 
 	def fetch(self,uri, headers):
-		req = urllib2.Request(uri)
+		req = urllib.request.Request(uri)
 		self.decorate(req)
 		opener = self.make_opener(uri)
 		self.patch_headers(opener, headers)
@@ -59,7 +61,7 @@ class httpclient:
 
 	# could not get it to work with opener. hope we can isolate all xml magic
 	def post_with_body(self, uri, data, headers=None): # data - dict()
-		req = urllib2.Request(uri, data.encode('utf-8'))
+		req = urllib.request.Request(uri, data.encode('utf-8'))
 		req.add_header('User-Agent','Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11')
 		req.add_header('Referer',uri)
 		for k, v in headers:
@@ -67,12 +69,12 @@ class httpclient:
 		self.decorate(req)
 		print(uri)
 		print('<br><br>')
-		return urllib2.urlopen(req)
+		return urllib.request.urlopen(req)
 		
 
 	def post(self, uri, data = dict(), headers=None): # data - dict()
-		data = urllib.urlencode(data)
-		req = urllib2.Request(uri, data)
+		data = urllib.parse.urlencode(data).encode('utf-8')
+		req = urllib.request.Request(uri, data)
 		self.decorate(req)
 		opener = self.make_opener(uri)
 		self.patch_headers(opener, headers)
